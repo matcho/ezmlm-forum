@@ -1,6 +1,5 @@
-<!--<h1>view-list : <?= $config['ezmlm-php']['list'] ?></h1>-->
-
-<div class="container-fluid">
+<!-- list view -->
+<div class="container-fluid" id="view-list">
 	<div class="row">
 		<div id="list-info-box">
 			<!-- list-info-box.tpl -->
@@ -38,6 +37,30 @@
 	</div>
 </div>
 
+<!-- thread view -->
+<div class="container-fluid" id="view-thread">
+	<div class="row">
+		<div id="back-to-list">
+			<a title="Retour à la liste"
+				class="back-to-list-link glyphicon glyphicon-circle-arrow-left"
+				href="<?php echo $rootUri ?>/view-list">
+			</a>
+		</div>
+		<div id="thread-info-box">
+			<!-- thread-info-box.tpl -->
+		</div>
+		<div id="work-indicator">
+			<img src="<?php echo $dataRootUri ?>/img/wait.gif" />
+		</div>
+		<div id="thread-messages">
+			<!-- thread-messages.tpl -->
+		</div>
+	</div>
+</div>
+
+
+
+
 <?php
 	// {{mustache}} templates
 	include $templatesPath . '/list-info-box.tpl';
@@ -47,7 +70,7 @@
 ?>
 
 <script type="text/javascript">
-	var viewList = new ViewList();
-	viewList.setConfig('<?= json_encode($config, JSON_HEX_APOS) ?>');
-	viewList.init();
+	var forum = new EzmlmForum();
+	forum.setConfig('<?= json_encode($config, JSON_HEX_APOS) ?>');
+	forum.init();
 </script>

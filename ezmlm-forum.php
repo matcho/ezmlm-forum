@@ -1,7 +1,7 @@
 <?php
 /**
- * Front controller for ezmlm-forum : reads the config, and renders pages using
- * sub-controllers and templates
+ * Front controller for ezmlm-forum :
+ * reads the config and renders the single page
  */
 class EzmlmForum {
 
@@ -30,8 +30,13 @@ class EzmlmForum {
 	/** Name of the auth adapter defined in the config file */
 	protected $authAdapter;
 
-	/** Page to render */
-	protected $page;
+	/** Data array to be injected into view template */
+	protected $data = array();
+
+	/** ezmlm hash of current thread */
+	protected $threadHash;
+
+
 
 	/**
 	 * Starts the front controller, reads config, parameters and URI fragments
@@ -74,7 +79,9 @@ class EzmlmForum {
 	}
 
 	/** Post-constructor adjustments */
-	protected function init() {}
+	protected function init() {
+		$this->getThreadHash();
+	}
 
 	/**
 	 * Returns the base URI after the which JS, CSS etc. files may be invoked
@@ -183,22 +190,62 @@ class EzmlmForum {
 	}
 
 	/**
-	 * Renders the requested page (specified through URI fragment or GET parameter)
+	 * Renders the page by injecting controller data inside a view template
 	 */
-	public function renderPage() {
-		// instanciate page controller
-		$pageControllerFile = 'controllers/' . strtolower($this->page) . '.php';
-		$pageControllerClass = $this->camelize($this->page);
-		if (! file_exists($pageControllerFile)) {
-			throw new Exception("page [" . $this->page . "] does not exist, or controller file [$pageControllerFile] is missing");
+	public function render() {
+		$viewFile = 'views/ezmlm.php';
+		if (! file_exists($viewFile)) {
+			throw new Exception("view file [$viewFile] is missing");
 		}
+		// inject data and render template
+		$this->buildPageData();
+		extract($this->data);
+		ob_start();
+		if ((bool) ini_get('short_open_tag') === true) {
+			include $viewFile;
+		} else {
+			$templateCode = file_get_contents($viewFile);
+			$this->convertShortTags($templateCode);
+			// Evaluating PHP mixed with HTML requires closing the PHP markup opened by eval()
+			$templateCode = '?>' . $templateCode;
+			echo eval($templateCode);
+		}
+		// get ouput
+		$out = ob_get_contents();
+		// get rid of buffer
+		@ob_end_clean();
 
-		// build controller
-		require $pageControllerFile;
-		$pageController = new $pageControllerClass($this);
+		echo $out;
+	}
 
-		// render page
-		echo $pageController->render();
+	protected function getThreadHash() {
+		if (! empty($this->resources[1])) {
+			$this->threadHash = $this->resources[1];
+		} elseif ($this->getParam('thread') != null) {
+			$this->threadHash = $this->getParam('thread');
+		} // else no thread, we're viewing a list page
+	}
+
+	/**
+	 * Returns an array of data to be injected in the view template; each key
+	 * will lead to a variable named after it, ie. returning array('stuff' => 3)
+	 * will make $stuff available in the template, with a value of 3
+	 */
+	protected function buildPageData() {
+		$this->data ['config'] = $this->config;
+		$this->data['threadHash'] = $this->threadHash; // TODO optional
+		$this->data['dataRootUri'] = $this->getDataRootUri();
+		$this->data['templatesPath'] = 'views/tpl';
+	}
+
+	/**
+	 * Converts short PHP tags to <?php echo (...) ?> ones
+	 */
+	protected function convertShortTags(&$templateCode) {
+		// Remplacement de tags courts par un tag long avec echo
+		$templateCode = str_replace('<?=', '<?php echo ',  $templateCode);
+		// Ajout systématique d'un point virgule avant la fermeture php
+		$templateCode = preg_replace("/;*\s*\?>/", "; ?>", $templateCode);
 	}
 
 	/**

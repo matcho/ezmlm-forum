@@ -26,8 +26,6 @@
 			<script type="text/javascript" src="<?= $fc->getAuthAdapterPath() ?>"></script>
 		<?php endif ?>
 		<script type="text/javascript" src="<?= $fc->getRootUri() ?>/js/EzmlmForum.js"></script>
-		<script type="text/javascript" src="<?= $fc->getRootUri() ?>/js/ViewThread.js"></script>
-		<script type="text/javascript" src="<?= $fc->getRootUri() ?>/js/ViewList.js"></script>
 		<link rel="stylesheet" type="text/css" href="<?= $fc->getRootUri() ?>/css/ezmlm-forum-standalone.css" />
 		<link rel="stylesheet" type="text/css" href="<?= $fc->getRootUri() ?>/css/ezmlm-forum-internal.css" />
 	</head>

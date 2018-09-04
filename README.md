@@ -6,4 +6,4 @@ Requires [ezmlm-php](https://github.com/telabotanica/ezmlm-php)
 ## Install
 `npm install && npm run build`
 
-Tela Botanica - 2016
+Tela Botanica − 2016-2018
